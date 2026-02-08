@@ -7,10 +7,26 @@ import { Modal } from '@/components/Modal';
 import { Plus } from 'lucide-react';
 
 export default function EmployeesPage() {
-    const { employees, loading, addEmployee } = useEmployees();
+    const {
+        employees,
+        loading,
+        addEmployee,
+        updateEmployee,
+        deleteEmployee,
+        addDocument,
+        updateDocument,
+        deleteDocument,
+        uploadFile
+    } = useEmployees();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDocModalOpen, setDocModalOpen] = useState(false);
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+
     const [newName, setNewName] = useState('');
     const [newPosition, setNewPosition] = useState('');
+    const [newDoc, setNewDoc] = useState({ name: '', expiryDate: '', file: null as File | null });
+    const [uploading, setUploading] = useState(false);
 
     const handleAddEmployee = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -22,10 +38,25 @@ export default function EmployeesPage() {
         }
     };
 
+    const handleAddDoc = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (selectedEmployeeId) {
+            setUploading(true);
+            let fileUrl = '';
+            if (newDoc.file) {
+                fileUrl = await uploadFile(newDoc.file) || '';
+            }
+            await addDocument(selectedEmployeeId, newDoc.name, newDoc.expiryDate, fileUrl);
+            setNewDoc({ name: '', expiryDate: '', file: null });
+            setUploading(false);
+            setDocModalOpen(false);
+        }
+    };
+
     if (loading) {
         return (
-            <div className="container" style={{ textAlign: 'center', padding: '5rem 2rem' }}>
-                <div style={{ fontSize: '1.2rem', color: 'var(--secondary)', opacity: 0.7 }}>Loading your team...</div>
+            <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
+                <div className="premium-card" style={{ padding: '2rem' }}>Loading application data...</div>
             </div>
         );
     }
@@ -54,8 +85,14 @@ export default function EmployeesPage() {
                     <EmployeeCard
                         key={employee.id}
                         employee={employee}
-                        onAddDocument={() => { }}
-                        onDelete={() => { }}
+                        onAddDocument={(id) => {
+                            setSelectedEmployeeId(id);
+                            setDocModalOpen(true);
+                        }}
+                        onDelete={deleteEmployee}
+                        onUpdateEmployee={updateEmployee}
+                        onUpdateDocument={updateDocument}
+                        onDeleteDocument={deleteDocument}
                     />
                 ))}
                 {employees.length === 0 && (
@@ -88,7 +125,7 @@ export default function EmployeesPage() {
                             <input
                                 type="text"
                                 className="form-input"
-                                placeholder="e.g. Senior Surveyor"
+                                placeholder="e.g. Operations Manager"
                                 value={newPosition}
                                 onChange={(e) => setNewPosition(e.target.value)}
                                 required
@@ -96,6 +133,55 @@ export default function EmployeesPage() {
                         </div>
                         <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%', justifyContent: 'center' }}>
                             Create Employee Profile
+                        </button>
+                    </form>
+                </Modal>
+            )}
+
+            {isDocModalOpen && (
+                <Modal
+                    isOpen={isDocModalOpen}
+                    title="Add Document"
+                    onClose={() => setDocModalOpen(false)}
+                >
+                    <form onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <label style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--secondary)' }}>Document Name</label>
+                            <input
+                                type="text"
+                                className="form-input"
+                                placeholder="e.g. Passport"
+                                value={newDoc.name}
+                                onChange={(e) => setNewDoc({ ...newDoc, name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <label style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--secondary)' }}>Expiry Date</label>
+                            <input
+                                type="date"
+                                className="form-input"
+                                value={newDoc.expiryDate}
+                                onChange={(e) => setNewDoc({ ...newDoc, expiryDate: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <label style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--secondary)' }}>Attach File (Optional)</label>
+                            <input
+                                type="file"
+                                className="form-input"
+                                style={{ fontSize: '0.8125rem' }}
+                                onChange={(e) => setNewDoc({ ...newDoc, file: e.target.files?.[0] || null })}
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            style={{ marginTop: '0.5rem', width: '100%', justifyContent: 'center' }}
+                            disabled={uploading}
+                        >
+                            {uploading ? 'Processing File...' : 'Add Document'}
                         </button>
                     </form>
                 </Modal>

@@ -79,66 +79,130 @@ export function useEmployees() {
         };
 
         try {
-            // Attempt Supabase
             const { data, error } = await supabase.from('employees').insert([{ name, position }]).select().single();
-
             if (error) throw error;
-
             const dbEmployee = data ? { ...data, documents: [] } : newEmployee;
-            const updatedEmployees = [...employees, dbEmployee];
-            setEmployees(updatedEmployees);
-            localStorage.setItem('doctrack_data', JSON.stringify(updatedEmployees));
+            setEmployees(prev => [...prev, dbEmployee]);
+            localStorage.setItem('doctrack_data', JSON.stringify([...employees, dbEmployee]));
         } catch (err) {
-            console.error('Failed to add employee to Supabase, saving locally:', err);
-            const updatedEmployees = [...employees, newEmployee];
-            setEmployees(updatedEmployees);
-            localStorage.setItem('doctrack_data', JSON.stringify(updatedEmployees));
+            console.error('Supabase add error:', err);
+            const updated = [...employees, newEmployee];
+            setEmployees(updated);
+            localStorage.setItem('doctrack_data', JSON.stringify(updated));
         }
     };
 
-    const addDocument = async (employeeId: string, name: string, expiryDate: string) => {
+    const updateEmployee = async (id: string, name: string, position: string) => {
+        try {
+            const { error } = await supabase.from('employees').update({ name, position }).eq('id', id);
+            if (error) throw error;
+            setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, name, position } : emp));
+        } catch (err) {
+            console.error('Supabase update error:', err);
+            setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, name, position } : emp));
+        }
+    };
+
+    const deleteEmployee = async (id: string) => {
+        try {
+            await supabase.from('employees').delete().eq('id', id);
+            setEmployees(prev => prev.filter(emp => emp.id !== id));
+        } catch (err) {
+            console.error('Supabase delete error:', err);
+            setEmployees(prev => prev.filter(emp => emp.id !== id));
+        }
+    };
+
+    const addDocument = async (employeeId: string, name: string, expiryDate: string, fileUrl?: string) => {
         const newId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
         const newDoc: Document = {
             id: newId,
             name,
             expiry_date: expiryDate,
+            file_url: fileUrl,
             status: calculateStatus(expiryDate)
         };
 
         try {
-            const { error } = await supabase.from('documents').insert([{ employee_id: employeeId, name, expiry_date: expiryDate }]);
+            const { error } = await supabase.from('documents').insert([{
+                employee_id: employeeId,
+                name,
+                expiry_date: expiryDate,
+                file_url: fileUrl
+            }]);
             if (error) throw error;
+
+            setEmployees(prev => prev.map(emp => {
+                if (emp.id === employeeId) {
+                    return { ...emp, documents: [...(emp.documents || []), newDoc] };
+                }
+                return emp;
+            }));
         } catch (err) {
-            console.error('Failed to add document to Supabase:', err);
+            console.error('Supabase doc add error:', err);
         }
-
-        const updatedEmployees = employees.map(emp => {
-            if (emp.id === employeeId) {
-                return {
-                    ...emp,
-                    documents: [...(emp.documents || []), newDoc]
-                };
-            }
-            return emp;
-        });
-
-        setEmployees(updatedEmployees);
-        localStorage.setItem('doctrack_data', JSON.stringify(updatedEmployees));
     };
 
-    const deleteEmployee = async (id: string) => {
-        await supabase.from('employees').delete().eq('id', id);
-        const updated = employees.filter(emp => emp.id !== id);
-        setEmployees(updated);
-        localStorage.setItem('doctrack_data', JSON.stringify(updated));
+    const deleteDocument = async (docId: string, employeeId: string) => {
+        try {
+            await supabase.from('documents').delete().eq('id', docId);
+            setEmployees(prev => prev.map(emp => {
+                if (emp.id === employeeId) {
+                    return { ...emp, documents: emp.documents.filter(d => d.id !== docId) };
+                }
+                return emp;
+            }));
+        } catch (err) {
+            console.error('Supabase doc delete error:', err);
+        }
+    };
+
+    const uploadFile = async (file: File) => {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random()}.${fileExt}`;
+            const filePath = `documents/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('doctrack_files')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('doctrack_files')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (err) {
+            console.error('File upload error:', err);
+            return null;
+        }
+    };
+
+    const updateDocument = async (docId: string, name: string, expiryDate: string) => {
+        try {
+            const { error } = await supabase.from('documents').update({ name, expiry_date: expiryDate }).eq('id', docId);
+            if (error) throw error;
+            setEmployees(prev => prev.map(emp => ({
+                ...emp,
+                documents: emp.documents.map(d => d.id === docId ? { ...d, name, expiry_date: expiryDate, status: calculateStatus(expiryDate) } : d)
+            })));
+        } catch (err) {
+            console.error('Supabase doc update error:', err);
+        }
     };
 
     return {
         employees,
         loading,
         addEmployee,
-        addDocument,
+        updateEmployee,
         deleteEmployee,
+        addDocument,
+        updateDocument,
+        deleteDocument,
+        uploadFile,
         refresh: fetchData
     };
 }
