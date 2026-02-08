@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useEmployees } from '@/hooks/useEmployees';
-import EmployeeCard from '@/components/EmployeeCard';
-import Modal from '@/components/Modal';
+import { EmployeeCard } from '@/components/EmployeeCard';
+import { Modal } from '@/components/Modal';
 import { Plus } from 'lucide-react';
 
 export default function EmployeesPage() {
@@ -51,7 +51,12 @@ export default function EmployeesPage() {
 
             <div className="grid">
                 {employees.map(employee => (
-                    <EmployeeCard key={employee.id} employee={employee} />
+                    <EmployeeCard
+                        key={employee.id}
+                        employee={employee}
+                        onAddDocument={() => { }}
+                        onDelete={() => { }}
+                    />
                 ))}
                 {employees.length === 0 && (
                     <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem 2rem', background: 'rgba(255,255,255,0.03)', borderRadius: '2rem', border: '1px dashed rgba(255,255,255,0.1)' }}>
@@ -61,7 +66,11 @@ export default function EmployeesPage() {
             </div>
 
             {isModalOpen && (
-                <Modal title="Add New Employee" onClose={() => setIsModalOpen(false)}>
+                <Modal
+                    isOpen={isModalOpen}
+                    title="Add New Employee"
+                    onClose={() => setIsModalOpen(false)}
+                >
                     <form onSubmit={handleAddEmployee} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             <label style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--secondary)' }}>Full Name</label>
