@@ -1,0 +1,30 @@
+Colors
+Primary:
+#DA1F33
+Accent:
+#002A4E
+Background:
+#FFFFFF
+Text Primary:
+#002A4E
+Link:
+#002A4E
+Fonts
+Open Sans(body)
+Noto Sans(heading)
+Montserrat(body)
+Typography
+primary: Open Sans
+heading: Noto Sans
+h1: 40px
+h2: 22px
+body: 9px
+Spacing
+Base Unit:
+4
+Border Radius:
+5px
+Personality
+Tone: professional
+Energy: medium
+Audience: maritime industry professionals
