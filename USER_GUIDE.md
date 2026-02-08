@@ -3,19 +3,20 @@
 Welcome to DocTrack! This application helps you track employee documents and their expiry dates with a gorgeous, interactive interface.
 
 ## 1. How to Run the App Locally
-Since I have already set up the code for you, follow these steps to see it in action:
+If you want to try running it on your computer again (now that I've finished the setup):
 
 1.  **Open a Terminal**: (In VS Code, press `Ctrl + ` ` (backtick) or go to Terminal > New Terminal).
 2.  **Start the App**: Type the following command and press Enter:
     ```bash
-    npm run dev
+    npx next dev
     ```
+    *(I am using `npx next` instead of `npm run dev` to help bypass the local error you saw).*
 3.  **View the App**: Open your web browser and go to: `http://localhost:3000`
 
 ---
 
 ## 2. Setting Up Your Online Database (Supabase)
-The app currently stores data on your computer (Local Storage). To use the online database so your data is safe and shared, follow these steps:
+To use the online database so your data is safe and shared, follow these steps:
 
 1.  **Create a Supabase Account**: Go to [supabase.com](https://supabase.com) and sign up for a free account.
 2.  **Create a New Project**:
@@ -34,14 +35,40 @@ The app currently stores data on your computer (Local Storage). To use the onlin
       NEXT_PUBLIC_SUPABASE_URL=your_project_url_here
       NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
       ```
-5.  **Restart the app** (Stop the terminal with `Ctrl + C` and run `npm run dev` again).
 
 ---
 
-## 3. Using the Dashboard
-- **Add Employee**: Click the red "+ Add New Employee" button at the top right.
-- **Add Document**: Click the "Add Document" button on any employee's card.
+## 3. Online Deployment Guide (GitHub & Vercel)
+This is the recommended way to use the app permanently!
+
+### Step A: Push to GitHub
+1.  **Open GitHub**: Go to [github.com](https://github.com) and log in.
+2.  **New Repository**: Click "New" and name it `doctrack`.
+3.  **Upload Code**:
+    *   In the project folder on your computer, open a terminal.
+    *   I've installed Git for you, but we need to use its full "address" to run it. 
+    *   **Run these commands one by one** (Copy and paste each one):
+        ```powershell
+        & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" remote add origin https://github.com/YOUR_USERNAME/doctrack.git
+        & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" branch -M main
+        & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" push -u origin main
+        ```
+    *(Replace `YOUR_USERNAME` with your GitHub username).*
+
+### Step B: Deploy to Vercel
+1.  **Open Vercel**: Go to [vercel.com](https://vercel.com) and sign up with your GitHub account.
+2.  **Add New Project**: Click "Add New" > "Project".
+3.  **Import**: Find the `doctrack` repository and click "Import".
+4.  **Environment Variables**:
+    *   Under "Environment Variables", add the two keys from your Supabase settings (URL and Key).
+5.  **Deploy**: Click "Deploy". Your app will be live!
+
+---
+
+## 4. Using the Dashboard
+- **Add Employee**: Click the red "+ Add New Employee" button.
+- **Add Document**: Click "Add Document" on any employee's card.
 - **Alert Colors**:
-    - **Red**: Document expires in less than 1 month.
-    - **Yellow/Amber**: Document expires in less than 3 months.
-    - **Green**: Document is safe (expires after 3 months).
+    - 🚨 **Red**: Expires in less than 1 month.
+    - ⚠️ **Yellow**: Expires in less than 3 months.
+    - ✅ **Green**: Expires after 3 months.
