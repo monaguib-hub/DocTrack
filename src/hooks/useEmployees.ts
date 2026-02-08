@@ -43,15 +43,16 @@ export function useEmployees() {
             if (!error && supabaseEmployees) {
                 const transformedData = supabaseEmployees.map((emp: any) => ({
                     ...emp,
-                    documents: emp.documents.map((doc: any) => ({
+                    documents: (emp.documents || []).map((doc: any) => ({
                         ...doc,
                         status: calculateStatus(doc.expiry_date)
                     }))
                 }));
                 setEmployees(transformedData);
+                localStorage.setItem('doctrack_data', JSON.stringify(transformedData));
             } else {
-                // Fallback to localStorage if Supabase is not configured or fails
-                console.warn('Supabase fetch failed or not configured, using localStorage fallback');
+                if (error) console.error('Supabase fetch error:', error);
+                // Fallback to localStorage
                 const localData = localStorage.getItem('doctrack_data');
                 if (localData) {
                     setEmployees(JSON.parse(localData));
@@ -69,37 +70,53 @@ export function useEmployees() {
     }, []);
 
     const addEmployee = async (name: string, position: string) => {
+        const newId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
         const newEmployee: Employee = {
-            id: crypto.randomUUID(),
+            id: newId,
             name,
             position,
             documents: []
         };
 
-        // Attempt Supabase
-        const { data, error } = await supabase.from('employees').insert([{ name, position }]).select().single();
+        try {
+            // Attempt Supabase
+            const { data, error } = await supabase.from('employees').insert([{ name, position }]).select().single();
 
-        const updatedEmployees = [...employees, data || newEmployee];
-        setEmployees(updatedEmployees);
-        localStorage.setItem('doctrack_data', JSON.stringify(updatedEmployees));
+            if (error) throw error;
+
+            const dbEmployee = data ? { ...data, documents: [] } : newEmployee;
+            const updatedEmployees = [...employees, dbEmployee];
+            setEmployees(updatedEmployees);
+            localStorage.setItem('doctrack_data', JSON.stringify(updatedEmployees));
+        } catch (err) {
+            console.error('Failed to add employee to Supabase, saving locally:', err);
+            const updatedEmployees = [...employees, newEmployee];
+            setEmployees(updatedEmployees);
+            localStorage.setItem('doctrack_data', JSON.stringify(updatedEmployees));
+        }
     };
 
     const addDocument = async (employeeId: string, name: string, expiryDate: string) => {
+        const newId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
         const newDoc: Document = {
-            id: crypto.randomUUID(),
+            id: newId,
             name,
             expiry_date: expiryDate,
             status: calculateStatus(expiryDate)
         };
 
-        // Attempt Supabase
-        await supabase.from('documents').insert([{ employee_id: employeeId, name, expiry_date: expiryDate }]);
+        try {
+            const { error } = await supabase.from('documents').insert([{ employee_id: employeeId, name, expiry_date: expiryDate }]);
+            if (error) throw error;
+        } catch (err) {
+            console.error('Failed to add document to Supabase:', err);
+        }
 
         const updatedEmployees = employees.map(emp => {
             if (emp.id === employeeId) {
                 return {
                     ...emp,
-                    documents: [...emp.documents, newDoc]
+                    documents: [...(emp.documents || []), newDoc]
                 };
             }
             return emp;
