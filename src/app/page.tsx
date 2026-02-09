@@ -16,7 +16,14 @@ export default function LandingPage() {
                 </p>
             </div>
 
-            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+            <div className="grid" style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '1.5rem',
+                width: '100%',
+                maxWidth: '1200px',
+                margin: '0 auto'
+            }}>
                 <Link href="/dashboard" style={{ textDecoration: 'none' }}>
                     <div className="premium-card interactive-card" style={{ padding: '2.5rem 1.5rem', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                         <div style={{
