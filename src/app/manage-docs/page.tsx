@@ -96,7 +96,7 @@ export default function ManageDocsPage() {
         const children = docTypes.filter(d => d.parent_id === type.id);
 
         return (
-            <div key={type.id} style={{ marginLeft: `${depth * 2rem }` }}>
+            <div key={type.id} style={{ marginLeft: `${depth * 2}rem` }}>
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -112,14 +112,14 @@ export default function ManageDocsPage() {
                         <span style={{ fontWeight: '600' }}>{type.name}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button 
+                        <button
                             onClick={() => {
                                 setNewDocName('');
                                 setParentTypeId(type.id);
                                 setSelectedCategory(type.category);
                                 setIsAddingCategory(false);
                             }}
-                            className="btn-icon" 
+                            className="btn-icon"
                             title="Add Sub-document"
                         >
                             <Plus size={16} />
@@ -149,7 +149,7 @@ export default function ManageDocsPage() {
                         <button onClick={() => setParentTypeId(null)} style={{ marginLeft: '1rem', border: 'none', background: 'none', color: 'var(--critical)', cursor: 'pointer' }}>Cancel</button>
                     </div>
                 )}
-                
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <input
@@ -186,7 +186,7 @@ export default function ManageDocsPage() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         {!parentTypeId && (
-                            <button 
+                            <button
                                 onClick={() => setIsAddingCategory(!isAddingCategory)}
                                 style={{ background: 'none', border: 'none', color: 'var(--secondary)', fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
                             >
