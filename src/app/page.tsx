@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { EmployeeCard } from '@/components/EmployeeCard';
 import { Modal } from '@/components/Modal';
+import { DOCUMENT_CATEGORIES } from '@/data/documentTypes';
 
 export default function DashboardPage() {
     const {
@@ -27,6 +28,7 @@ export default function DashboardPage() {
     const [newEmployee, setNewEmployee] = useState({ name: '', position: '' });
     const [newDoc, setNewDoc] = useState({ name: '', expiryDate: '', file: null as File | null });
     const [isNoExpiry, setIsNoExpiry] = useState(false);
+    const [isCustomType, setIsCustomType] = useState(false);
     const [uploading, setUploading] = useState(false);
 
     // Filter states
@@ -77,6 +79,7 @@ export default function DashboardPage() {
             await addDocument(selectedEmployeeId, newDoc.name, isNoExpiry ? null : newDoc.expiryDate, fileUrl);
             setNewDoc({ name: '', expiryDate: '', file: null });
             setIsNoExpiry(false);
+            setIsCustomType(false);
             setUploading(false);
             setDocModalOpen(false);
         }
@@ -199,19 +202,46 @@ export default function DashboardPage() {
                 </form>
             </Modal>
 
-            <Modal isOpen={isDocModalOpen} onClose={() => { setDocModalOpen(false); setIsNoExpiry(false); }} title="Add Document">
+            <Modal isOpen={isDocModalOpen} onClose={() => { setDocModalOpen(false); setIsNoExpiry(false); setIsCustomType(false); }} title="Add Document">
                 <form onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem' }}>Document Name</label>
-                        <input
-                            type="text"
-                            value={newDoc.name}
-                            onChange={e => setNewDoc({ ...newDoc, name: e.target.value })}
-                            required
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem' }}>Document Type</label>
+                        <select
                             className="form-input"
-                            style={{ width: '100%' }}
-                            placeholder="e.g. Passport"
-                        />
+                            style={{ width: '100%', marginBottom: isCustomType ? '0.5rem' : '0' }}
+                            value={isCustomType ? 'custom' : newDoc.name}
+                            onChange={(e) => {
+                                if (e.target.value === 'custom') {
+                                    setIsCustomType(true);
+                                    setNewDoc({ ...newDoc, name: '' });
+                                } else {
+                                    setIsCustomType(false);
+                                    setNewDoc({ ...newDoc, name: e.target.value });
+                                }
+                            }}
+                            required
+                        >
+                            <option value="" disabled>Select a document type...</option>
+                            {Object.entries(DOCUMENT_CATEGORIES).map(([category, docs]) => (
+                                <optgroup key={category} label={category}>
+                                    {docs.map(doc => (
+                                        <option key={doc} value={doc}>{doc}</option>
+                                    ))}
+                                </optgroup>
+                            ))}
+                            <option value="custom">Other / Custom...</option>
+                        </select>
+                        {isCustomType && (
+                            <input
+                                type="text"
+                                value={newDoc.name}
+                                onChange={e => setNewDoc({ ...newDoc, name: e.target.value })}
+                                required
+                                className="form-input"
+                                style={{ width: '100%' }}
+                                placeholder="Enter custom document name"
+                            />
+                        )}
                     </div>
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>

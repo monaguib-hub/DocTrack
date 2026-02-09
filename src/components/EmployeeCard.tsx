@@ -128,6 +128,16 @@ export function EmployeeCard({
                     <div style={{ fontSize: '0.75rem', fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase' }}>
                         Documents ({employee.documents.length})
                     </div>
+                    <button
+                        onClick={() => onAddDocument(employee.id)}
+                        className="btn-icon"
+                        style={{ color: 'var(--primary)', background: 'rgba(0, 112, 243, 0.05)', borderRadius: '4px', padding: '2px' }}
+                        title="Add Document"
+                    >
+                        <Check size={14} style={{ display: 'none' }} /> {/* for layout reference if needed */}
+                        <X size={14} style={{ display: 'none' }} />
+                        <span style={{ fontSize: '1.25rem', lineHeight: '1', fontWeight: 'bold' }}>+</span>
+                    </button>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
