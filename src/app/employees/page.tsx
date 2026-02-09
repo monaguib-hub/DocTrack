@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { EmployeeCard } from '@/components/EmployeeCard';
 import { Modal } from '@/components/Modal';
-import { Plus } from 'lucide-react';
+import { Plus, Search, Filter, ArrowDownAZ, ArrowUpAZ, X } from 'lucide-react';
 
 export default function EmployeesPage() {
     const {
@@ -30,6 +30,24 @@ export default function EmployeesPage() {
     const [isNoExpiry, setIsNoExpiry] = useState(false);
     const [isCustomType, setIsCustomType] = useState(false);
     const [uploading, setUploading] = useState(false);
+
+    // Filter and Sort states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'critical' | 'warning' | 'safe'>('all');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
+    const filteredEmployees = employees.filter(emp => {
+        const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            emp.position.toLowerCase().includes(searchQuery.toLowerCase());
+
+        if (statusFilter === 'all') return matchesSearch;
+
+        const hasStatus = emp.documents.some(d => d.status === statusFilter);
+        return matchesSearch && hasStatus;
+    }).sort((a, b) => {
+        const comparison = a.name.localeCompare(b.name);
+        return sortOrder === 'asc' ? comparison : -comparison;
+    });
 
     const handleAddEmployee = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -85,8 +103,89 @@ export default function EmployeesPage() {
                 </button>
             </header>
 
+            {/* Filter Bar */}
+            <div className="premium-card" style={{ padding: '1rem', marginBottom: '2rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
+                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                    <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Search by name or position..."
+                        style={{ paddingLeft: '40px', width: '100%' }}
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery('')}
+                            style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                        onClick={() => setStatusFilter('all')}
+                        className={`btn ${statusFilter === 'all' ? 'btn-primary' : ''}`}
+                        style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', background: statusFilter === 'all' ? 'var(--secondary)' : 'rgba(0,0,0,0.05)', color: statusFilter === 'all' ? 'white' : 'var(--secondary)' }}
+                    >
+                        All
+                    </button>
+                    <button
+                        onClick={() => setStatusFilter('critical')}
+                        className={`btn ${statusFilter === 'critical' ? 'btn-primary' : ''}`}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.875rem',
+                            background: statusFilter === 'critical' ? 'var(--critical)' : 'rgba(218, 31, 51, 0.05)',
+                            color: statusFilter === 'critical' ? 'white' : 'var(--critical)',
+                            border: statusFilter === 'critical' ? 'none' : '1px solid var(--critical)'
+                        }}
+                    >
+                        Critical
+                    </button>
+                    <button
+                        onClick={() => setStatusFilter('warning')}
+                        className={`btn ${statusFilter === 'warning' ? 'btn-primary' : ''}`}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.875rem',
+                            background: statusFilter === 'warning' ? 'var(--warning)' : 'rgba(245, 158, 11, 0.05)',
+                            color: statusFilter === 'warning' ? 'white' : 'var(--warning)',
+                            border: statusFilter === 'warning' ? 'none' : '1px solid var(--warning)'
+                        }}
+                    >
+                        Warning
+                    </button>
+                    <button
+                        onClick={() => setStatusFilter('safe')}
+                        className={`btn ${statusFilter === 'safe' ? 'btn-primary' : ''}`}
+                        style={{
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.875rem',
+                            background: statusFilter === 'safe' ? 'var(--safe)' : 'rgba(16, 185, 129, 0.05)',
+                            color: statusFilter === 'safe' ? 'white' : 'var(--safe)',
+                            border: statusFilter === 'safe' ? 'none' : '1px solid var(--safe)'
+                        }}
+                    >
+                        Safe
+                    </button>
+                </div>
+
+                <button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="btn"
+                    style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.05)', color: 'var(--secondary)' }}
+                >
+                    {sortOrder === 'asc' ? <ArrowDownAZ size={18} /> : <ArrowUpAZ size={18} />}
+                    {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
+                </button>
+            </div>
+
             <div className="grid">
-                {employees.map(employee => (
+                {filteredEmployees.map(employee => (
                     <EmployeeCard
                         key={employee.id}
                         employee={employee}
@@ -106,9 +205,19 @@ export default function EmployeesPage() {
                         onDeleteDocument={deleteDocument}
                     />
                 ))}
-                {employees.length === 0 && (
+                {filteredEmployees.length === 0 && (
                     <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '5rem 2rem', background: 'rgba(255,255,255,0.03)', borderRadius: '2rem', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                        <p style={{ color: 'var(--secondary)', opacity: 0.5 }}>No employees found. Start by adding your first team member!</p>
+                        <p style={{ color: 'var(--secondary)', opacity: 0.5 }}>
+                            {employees.length === 0 ? 'No employees found. Start by adding your first team member!' : 'No employees match your search or filter criteria.'}
+                        </p>
+                        {employees.length > 0 && (
+                            <button
+                                onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
+                                style={{ background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '700', cursor: 'pointer', marginTop: '1rem' }}
+                            >
+                                Clear All Filters
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
