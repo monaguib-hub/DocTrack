@@ -97,7 +97,7 @@ export function EmployeeCard({
                             <button onClick={() => setIsEditing(false)} className="btn-icon" style={{ color: 'var(--critical)' }}><X size={18} /></button>
                         </>
                     ) : (
-                        <button onClick={() => setIsEditing(true)} className="btn-icon" style={{ opacity: 0.5 }}><Edit2 size={16} /></button>
+                        <button onClick={() => setIsEditing(true)} className="btn-icon" style={{ color: 'var(--secondary)' }}><Edit2 size={16} /></button>
                     )}
 
                     {!isEditing && (
@@ -228,7 +228,7 @@ export function EmployeeCard({
                     onClick={() => onDelete(employee.id)}
                     className="btn-icon"
                     style={{
-                        background: 'rgba(218, 31, 51, 0.05)',
+                        background: 'rgba(218, 31, 51, 0.1)',
                         color: 'var(--critical)',
                         padding: '10px'
                     }}
