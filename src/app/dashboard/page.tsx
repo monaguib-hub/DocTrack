@@ -4,11 +4,11 @@ import React, { useState } from 'react';
 import { useEmployees } from '@/hooks/useEmployees';
 import { EmployeeCard } from '@/components/EmployeeCard';
 import { Modal } from '@/components/Modal';
-import { DOCUMENT_CATEGORIES } from '@/data/documentTypes';
 
 export default function DashboardPage() {
     const {
         employees,
+        docTypes,
         loading,
         addEmployee,
         updateEmployee,
@@ -222,11 +222,15 @@ export default function DashboardPage() {
                             required
                         >
                             <option value="" disabled>Select a document type...</option>
-                            {Object.entries(DOCUMENT_CATEGORIES).map(([category, docs]) => (
+                            {Array.from(new Set(docTypes.map(d => d.category))).map(category => (
                                 <optgroup key={category} label={category}>
-                                    {docs.map(doc => (
-                                        <option key={doc} value={doc}>{doc}</option>
-                                    ))}
+                                    {docTypes
+                                        .filter(d => d.category === category)
+                                        .map(type => (
+                                            <option key={type.id} value={type.name}>
+                                                {type.parent_id ? `↳ ${type.name}` : type.name}
+                                            </option>
+                                        ))}
                                 </optgroup>
                             ))}
                             <option value="custom">Other / Custom...</option>

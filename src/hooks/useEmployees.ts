@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { DOCUMENT_CATEGORIES as INITIAL_CATEGORIES } from '@/data/documentTypes';
+
+export interface DocType {
+    id: string;
+    name: string;
+    category: string;
+    parent_id: string | null;
+}
 
 export interface Document {
     id: string;
@@ -18,6 +26,7 @@ export interface Employee {
 
 export function useEmployees() {
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const [docTypes, setDocTypes] = useState<DocType[]>([]);
     const [loading, setLoading] = useState(true);
 
     const calculateStatus = (expiryDate: string | null): 'safe' | 'warning' | 'critical' => {
@@ -32,9 +41,34 @@ export function useEmployees() {
         return 'safe';
     };
 
+    const fetchDocTypes = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('document_types')
+                .select('*')
+                .order('name');
+
+            if (!error && data && data.length > 0) {
+                setDocTypes(data);
+            } else {
+                // Return fallback even if empty
+                const fallback: DocType[] = [];
+                Object.entries(INITIAL_CATEGORIES).forEach(([cat, names]) => {
+                    names.forEach(name => {
+                        fallback.push({ id: name, name, category: cat, parent_id: null });
+                    });
+                });
+                setDocTypes(fallback);
+            }
+        } catch (err) {
+            console.error('Error fetching doc types:', err);
+        }
+    };
+
     const fetchData = async () => {
         try {
             setLoading(true);
+            await fetchDocTypes();
 
             // Try Supabase first
             const { data: supabaseEmployees, error } = await supabase
@@ -209,6 +243,7 @@ export function useEmployees() {
 
     return {
         employees,
+        docTypes,
         loading,
         addEmployee,
         updateEmployee,
