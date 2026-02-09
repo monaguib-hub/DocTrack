@@ -26,6 +26,7 @@ export default function EmployeesPage() {
     const [newName, setNewName] = useState('');
     const [newPosition, setNewPosition] = useState('');
     const [newDoc, setNewDoc] = useState({ name: '', expiryDate: '', file: null as File | null });
+    const [isNoExpiry, setIsNoExpiry] = useState(false);
     const [uploading, setUploading] = useState(false);
 
     const handleAddEmployee = async (e: React.FormEvent) => {
@@ -46,8 +47,9 @@ export default function EmployeesPage() {
             if (newDoc.file) {
                 fileUrl = await uploadFile(newDoc.file) || '';
             }
-            await addDocument(selectedEmployeeId, newDoc.name, newDoc.expiryDate, fileUrl);
+            await addDocument(selectedEmployeeId, newDoc.name, isNoExpiry ? null : newDoc.expiryDate, fileUrl);
             setNewDoc({ name: '', expiryDate: '', file: null });
+            setIsNoExpiry(false);
             setUploading(false);
             setDocModalOpen(false);
         }
@@ -148,7 +150,7 @@ export default function EmployeesPage() {
                 <Modal
                     isOpen={isDocModalOpen}
                     title="Add Document"
-                    onClose={() => setDocModalOpen(false)}
+                    onClose={() => { setDocModalOpen(false); setIsNoExpiry(false); }}
                 >
                     <form onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -163,13 +165,25 @@ export default function EmployeesPage() {
                             />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <label style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--secondary)' }}>Expiry Date</label>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <label style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--secondary)' }}>Expiry Date</label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer', opacity: 0.8 }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={isNoExpiry}
+                                        onChange={e => setIsNoExpiry(e.target.checked)}
+                                    />
+                                    No Expiry
+                                </label>
+                            </div>
                             <input
                                 type="date"
                                 className="form-input"
-                                value={newDoc.expiryDate}
+                                value={isNoExpiry ? '' : newDoc.expiryDate}
                                 onChange={(e) => setNewDoc({ ...newDoc, expiryDate: e.target.value })}
-                                required
+                                required={!isNoExpiry}
+                                disabled={isNoExpiry}
+                                style={{ opacity: isNoExpiry ? 0.5 : 1 }}
                             />
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 export interface Document {
     id: string;
     name: string;
-    expiry_date: string;
+    expiry_date: string | null;
     file_url?: string;
     status?: 'safe' | 'warning' | 'critical';
 }
@@ -20,7 +20,8 @@ export function useEmployees() {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const calculateStatus = (expiryDate: string): 'safe' | 'warning' | 'critical' => {
+    const calculateStatus = (expiryDate: string | null): 'safe' | 'warning' | 'critical' => {
+        if (!expiryDate) return 'safe';
         const today = new Date();
         const expiry = new Date(expiryDate);
         const diffTime = expiry.getTime() - today.getTime();
@@ -113,7 +114,7 @@ export function useEmployees() {
         }
     };
 
-    const addDocument = async (employeeId: string, name: string, expiryDate: string, fileUrl?: string) => {
+    const addDocument = async (employeeId: string, name: string, expiryDate: string | null, fileUrl?: string) => {
         const newId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 11);
         const newDoc: Document = {
             id: newId,
@@ -180,7 +181,7 @@ export function useEmployees() {
         }
     };
 
-    const updateDocument = async (docId: string, name: string, expiryDate: string, fileUrl?: string) => {
+    const updateDocument = async (docId: string, name: string, expiryDate: string | null, fileUrl?: string) => {
         try {
             const updateData: any = { name, expiry_date: expiryDate };
             if (fileUrl) updateData.file_url = fileUrl;

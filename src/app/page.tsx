@@ -26,6 +26,7 @@ export default function DashboardPage() {
     // Form states
     const [newEmployee, setNewEmployee] = useState({ name: '', position: '' });
     const [newDoc, setNewDoc] = useState({ name: '', expiryDate: '', file: null as File | null });
+    const [isNoExpiry, setIsNoExpiry] = useState(false);
     const [uploading, setUploading] = useState(false);
 
     // Filter states
@@ -73,8 +74,9 @@ export default function DashboardPage() {
             if (newDoc.file) {
                 fileUrl = await uploadFile(newDoc.file) || '';
             }
-            await addDocument(selectedEmployeeId, newDoc.name, newDoc.expiryDate, fileUrl);
+            await addDocument(selectedEmployeeId, newDoc.name, isNoExpiry ? null : newDoc.expiryDate, fileUrl);
             setNewDoc({ name: '', expiryDate: '', file: null });
+            setIsNoExpiry(false);
             setUploading(false);
             setDocModalOpen(false);
         }
@@ -197,7 +199,7 @@ export default function DashboardPage() {
                 </form>
             </Modal>
 
-            <Modal isOpen={isDocModalOpen} onClose={() => setDocModalOpen(false)} title="Add Document">
+            <Modal isOpen={isDocModalOpen} onClose={() => { setDocModalOpen(false); setIsNoExpiry(false); }} title="Add Document">
                 <form onSubmit={handleAddDoc} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div>
                         <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem' }}>Document Name</label>
@@ -212,14 +214,25 @@ export default function DashboardPage() {
                         />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '600', marginBottom: '0.5rem' }}>Expiry Date</label>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <label style={{ fontSize: '0.875rem', fontWeight: '600' }}>Expiry Date</label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', cursor: 'pointer' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={isNoExpiry}
+                                    onChange={e => setIsNoExpiry(e.target.checked)}
+                                />
+                                No Expiry Date
+                            </label>
+                        </div>
                         <input
                             type="date"
-                            value={newDoc.expiryDate}
+                            value={isNoExpiry ? '' : newDoc.expiryDate}
                             onChange={e => setNewDoc({ ...newDoc, expiryDate: e.target.value })}
-                            required
+                            required={!isNoExpiry}
+                            disabled={isNoExpiry}
                             className="form-input"
-                            style={{ width: '100%' }}
+                            style={{ width: '100%', opacity: isNoExpiry ? 0.5 : 1 }}
                         />
                     </div>
                     <div>
@@ -279,9 +292,9 @@ export default function DashboardPage() {
                                     <div style={{
                                         fontSize: '0.875rem',
                                         fontWeight: '700',
-                                        color: doc.status === 'critical' ? 'var(--critical)' : 'var(--warning)'
+                                        color: doc.expiry_date ? (doc.status === 'critical' ? 'var(--critical)' : 'var(--warning)') : 'var(--safe)'
                                     }}>
-                                        {doc.expiry_date}
+                                        {doc.expiry_date || 'Permanent'}
                                     </div>
                                     <div className={`status-badge status-${doc.status}`} style={{ marginTop: '4px', display: 'inline-block' }}>
                                         {doc.status}

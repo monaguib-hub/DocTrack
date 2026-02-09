@@ -7,7 +7,7 @@ interface EmployeeCardProps {
     onAddDocument: (id: string) => void;
     onDelete: (id: string) => void;
     onUpdateEmployee: (id: string, name: string, position: string) => void;
-    onUpdateDocument: (docId: string, name: string, expiryDate: string, file?: File | null) => Promise<void>;
+    onUpdateDocument: (docId: string, name: string, expiryDate: string | null, file?: File | null) => Promise<void>;
     onDeleteDocument: (docId: string, employeeId: string) => void;
 }
 
@@ -27,6 +27,7 @@ export function EmployeeCard({
     const [editDocName, setEditDocName] = useState('');
     const [editDocDate, setEditDocDate] = useState('');
     const [editDocFile, setEditDocFile] = useState<File | null>(null);
+    const [isNoExpiry, setIsNoExpiry] = useState(false);
     const [isUpdatingDoc, setIsUpdatingDoc] = useState(false);
 
     const criticalDocs = employee.documents.filter(d => d.status === 'critical');
@@ -40,7 +41,7 @@ export function EmployeeCard({
     const handleUpdateDoc = async (docId: string) => {
         setIsUpdatingDoc(true);
         try {
-            await onUpdateDocument(docId, editDocName, editDocDate, editDocFile);
+            await onUpdateDocument(docId, editDocName, isNoExpiry ? null : editDocDate, editDocFile);
             setEditingDocId(null);
             setEditDocFile(null);
         } finally {
@@ -51,7 +52,8 @@ export function EmployeeCard({
     const startEditingDoc = (doc: Document) => {
         setEditingDocId(doc.id);
         setEditDocName(doc.name);
-        setEditDocDate(doc.expiry_date);
+        setEditDocDate(doc.expiry_date || '');
+        setIsNoExpiry(!doc.expiry_date);
         setEditDocFile(null);
     };
 
@@ -149,10 +151,20 @@ export function EmployeeCard({
                                     <input
                                         type="date"
                                         className="form-input"
-                                        value={editDocDate}
+                                        value={isNoExpiry ? '' : editDocDate}
                                         onChange={e => setEditDocDate(e.target.value)}
-                                        style={{ padding: '2px 4px', fontSize: '0.8125rem', width: '120px' }}
+                                        disabled={isNoExpiry}
+                                        style={{ padding: '2px 4px', fontSize: '0.8125rem', width: '120px', opacity: isNoExpiry ? 0.5 : 1 }}
                                     />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: '#64748b' }}>
+                                        <input
+                                            type="checkbox"
+                                            id={`no-expiry-${doc.id}`}
+                                            checked={isNoExpiry}
+                                            onChange={e => setIsNoExpiry(e.target.checked)}
+                                        />
+                                        <label htmlFor={`no-expiry-${doc.id}`}>No Expiry</label>
+                                    </div>
                                     <input
                                         type="file"
                                         className="form-input"
@@ -203,10 +215,10 @@ export function EmployeeCard({
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                         <span style={{
                                             fontSize: '0.8125rem',
-                                            color: doc.status === 'critical' ? 'var(--critical)' : doc.status === 'warning' ? 'var(--warning)' : 'var(--safe)',
+                                            color: doc.expiry_date ? (doc.status === 'critical' ? 'var(--critical)' : doc.status === 'warning' ? 'var(--warning)' : 'var(--safe)') : 'var(--safe)',
                                             fontWeight: '700'
                                         }}>
-                                            {doc.expiry_date}
+                                            {doc.expiry_date || 'Permanent'}
                                         </span>
                                         <div style={{ display: 'flex', gap: '0.25rem' }}>
                                             <button
