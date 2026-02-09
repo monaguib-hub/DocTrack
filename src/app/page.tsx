@@ -28,20 +28,33 @@ export default function DashboardPage() {
     const [newDoc, setNewDoc] = useState({ name: '', expiryDate: '', file: null as File | null });
     const [uploading, setUploading] = useState(false);
 
+    // Filter states
+    const [viewingStatus, setViewingStatus] = useState<'warning' | 'critical' | null>(null);
+
+    const allDocuments = employees.flatMap(emp =>
+        emp.documents.map(doc => ({ ...doc, employeeName: emp.name }))
+    );
+
+    const filteredDocs = viewingStatus ?
+        allDocuments.filter(d => d.status === viewingStatus) :
+        [];
+
     const stats = [
         { label: 'Total Employees', value: employees.length.toString(), icon: '👥' },
-        { label: 'Total Documents', value: employees.reduce((acc, emp) => acc + emp.documents.length, 0).toString(), icon: '📄' },
+        { label: 'Total Documents', value: allDocuments.length.toString(), icon: '📄' },
         {
             label: 'Expiring (3 months)',
-            value: employees.reduce((acc, emp) => acc + emp.documents.filter(d => d.status === 'warning').length, 0).toString(),
+            value: allDocuments.filter(d => d.status === 'warning').length.toString(),
             icon: '⚠️',
-            status: 'warning'
+            status: 'warning',
+            clickable: true
         },
         {
             label: 'Critical (1 month)',
-            value: employees.reduce((acc, emp) => acc + emp.documents.filter(d => d.status === 'critical').length, 0).toString(),
+            value: allDocuments.filter(d => d.status === 'critical').length.toString(),
             icon: '🚨',
-            status: 'critical'
+            status: 'critical',
+            clickable: true
         },
     ];
 
@@ -86,7 +99,19 @@ export default function DashboardPage() {
             {/* Stats Grid */}
             <div className="dashboard-grid" style={{ marginBottom: '4rem' }}>
                 {stats.map((stat, i) => (
-                    <div key={i} className="premium-card animation-fade-in" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem', animationDelay: `${i * 0.1}s` }}>
+                    <div
+                        key={i}
+                        className={`premium-card animation-fade-in ${stat.clickable ? 'interactive-card' : ''}`}
+                        onClick={() => stat.clickable && setViewingStatus(stat.status as any)}
+                        style={{
+                            padding: '1.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '1.5rem',
+                            animationDelay: `${i * 0.1}s`,
+                            cursor: stat.clickable ? 'pointer' : 'default'
+                        }}
+                    >
                         <div style={{
                             fontSize: '2rem',
                             background: stat.status === 'warning' ? 'rgba(245, 158, 11, 0.1)' : stat.status === 'critical' ? 'rgba(218, 31, 51, 0.1)' : 'rgba(0, 42, 78, 0.05)',
@@ -209,6 +234,61 @@ export default function DashboardPage() {
                         {uploading ? 'Processing...' : 'Add Document'}
                     </button>
                 </form>
+            </Modal>
+
+            {/* Filtered Documents Modal */}
+            <Modal
+                isOpen={!!viewingStatus}
+                onClose={() => setViewingStatus(null)}
+                title={viewingStatus === 'critical' ? 'Critical Documents (Expiring soon)' : 'Expiring Documents (3 Months)'}
+            >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '60vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                    {filteredDocs.length > 0 ? (
+                        filteredDocs.map((doc, i) => (
+                            <div key={i} style={{
+                                padding: '1rem',
+                                background: 'rgba(0,0,0,0.02)',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div>
+                                    <div style={{ fontWeight: '700', fontSize: '1rem' }}>{doc.name}</div>
+                                    <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>Employee: {doc.employeeName}</div>
+                                    {doc.file_url && (
+                                        <a href={doc.file_url} target="_blank" rel="noopener noreferrer" style={{
+                                            fontSize: '0.75rem',
+                                            color: 'var(--primary)',
+                                            textDecoration: 'none',
+                                            marginTop: '4px',
+                                            display: 'block',
+                                            fontWeight: '600'
+                                        }}>
+                                            View Attached File
+                                        </a>
+                                    )}
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <div style={{
+                                        fontSize: '0.875rem',
+                                        fontWeight: '700',
+                                        color: doc.status === 'critical' ? 'var(--critical)' : 'var(--warning)'
+                                    }}>
+                                        {doc.expiry_date}
+                                    </div>
+                                    <div className={`status-badge status-${doc.status}`} style={{ marginTop: '4px', display: 'inline-block' }}>
+                                        {doc.status}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+                            No documents found in this category.
+                        </div>
+                    )}
+                </div>
             </Modal>
         </div>
     );
