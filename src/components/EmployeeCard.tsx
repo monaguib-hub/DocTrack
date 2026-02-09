@@ -7,7 +7,7 @@ interface EmployeeCardProps {
     onAddDocument: (id: string) => void;
     onDelete: (id: string) => void;
     onUpdateEmployee: (id: string, name: string, position: string) => void;
-    onUpdateDocument: (docId: string, name: string, expiryDate: string) => void;
+    onUpdateDocument: (docId: string, name: string, expiryDate: string, file?: File | null) => Promise<void>;
     onDeleteDocument: (docId: string, employeeId: string) => void;
 }
 
@@ -26,6 +26,8 @@ export function EmployeeCard({
     const [editingDocId, setEditingDocId] = useState<string | null>(null);
     const [editDocName, setEditDocName] = useState('');
     const [editDocDate, setEditDocDate] = useState('');
+    const [editDocFile, setEditDocFile] = useState<File | null>(null);
+    const [isUpdatingDoc, setIsUpdatingDoc] = useState(false);
 
     const criticalDocs = employee.documents.filter(d => d.status === 'critical');
     const warningDocs = employee.documents.filter(d => d.status === 'warning');
@@ -35,15 +37,22 @@ export function EmployeeCard({
         setIsEditing(false);
     };
 
-    const handleUpdateDoc = (docId: string) => {
-        onUpdateDocument(docId, editDocName, editDocDate);
-        setEditingDocId(null);
+    const handleUpdateDoc = async (docId: string) => {
+        setIsUpdatingDoc(true);
+        try {
+            await onUpdateDocument(docId, editDocName, editDocDate, editDocFile);
+            setEditingDocId(null);
+            setEditDocFile(null);
+        } finally {
+            setIsUpdatingDoc(false);
+        }
     };
 
     const startEditingDoc = (doc: Document) => {
         setEditingDocId(doc.id);
         setEditDocName(doc.name);
         setEditDocDate(doc.expiry_date);
+        setEditDocFile(null);
     };
 
     return (
@@ -130,12 +139,12 @@ export function EmployeeCard({
                             borderRadius: '8px'
                         }}>
                             {editingDocId === doc.id ? (
-                                <div style={{ display: 'flex', gap: '0.5rem', flex: 1, alignItems: 'center' }}>
+                                <div style={{ display: 'flex', gap: '0.5rem', flex: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                                     <input
                                         className="form-input"
                                         value={editDocName}
                                         onChange={e => setEditDocName(e.target.value)}
-                                        style={{ padding: '2px 4px', fontSize: '0.8125rem', flex: 1 }}
+                                        style={{ padding: '2px 4px', fontSize: '0.8125rem', flex: 1, minWidth: '120px' }}
                                     />
                                     <input
                                         type="date"
@@ -144,8 +153,28 @@ export function EmployeeCard({
                                         onChange={e => setEditDocDate(e.target.value)}
                                         style={{ padding: '2px 4px', fontSize: '0.8125rem', width: '120px' }}
                                     />
-                                    <button onClick={() => handleUpdateDoc(doc.id)} className="btn-icon" style={{ color: 'var(--safe)' }}><Check size={14} /></button>
-                                    <button onClick={() => setEditingDocId(null)} className="btn-icon" style={{ color: 'var(--critical)' }}><X size={14} /></button>
+                                    <input
+                                        type="file"
+                                        className="form-input"
+                                        onChange={e => setEditDocFile(e.target.files?.[0] || null)}
+                                        style={{ padding: '2px 4px', fontSize: '0.75rem', width: '130px' }}
+                                    />
+                                    <button
+                                        onClick={() => handleUpdateDoc(doc.id)}
+                                        className="btn-icon"
+                                        style={{ color: 'var(--safe)' }}
+                                        disabled={isUpdatingDoc}
+                                    >
+                                        <Check size={14} />
+                                    </button>
+                                    <button
+                                        onClick={() => setEditingDocId(null)}
+                                        className="btn-icon"
+                                        style={{ color: 'var(--critical)' }}
+                                        disabled={isUpdatingDoc}
+                                    >
+                                        <X size={14} />
+                                    </button>
                                 </div>
                             ) : (
                                 <>

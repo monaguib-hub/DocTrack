@@ -151,7 +151,13 @@ export default function DashboardPage() {
                         }}
                         onDelete={deleteEmployee}
                         onUpdateEmployee={updateEmployee}
-                        onUpdateDocument={updateDocument}
+                        onUpdateDocument={async (docId, name, date, file) => {
+                            let fileUrl = '';
+                            if (file) {
+                                fileUrl = await uploadFile(file) || '';
+                            }
+                            await updateDocument(docId, name, date, fileUrl);
+                        }}
                         onDeleteDocument={deleteDocument}
                     />
                 ))}

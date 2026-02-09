@@ -180,13 +180,22 @@ export function useEmployees() {
         }
     };
 
-    const updateDocument = async (docId: string, name: string, expiryDate: string) => {
+    const updateDocument = async (docId: string, name: string, expiryDate: string, fileUrl?: string) => {
         try {
-            const { error } = await supabase.from('documents').update({ name, expiry_date: expiryDate }).eq('id', docId);
+            const updateData: any = { name, expiry_date: expiryDate };
+            if (fileUrl) updateData.file_url = fileUrl;
+
+            const { error } = await supabase.from('documents').update(updateData).eq('id', docId);
             if (error) throw error;
             setEmployees(prev => prev.map(emp => ({
                 ...emp,
-                documents: emp.documents.map(d => d.id === docId ? { ...d, name, expiry_date: expiryDate, status: calculateStatus(expiryDate) } : d)
+                documents: emp.documents.map(d => d.id === docId ? {
+                    ...d,
+                    name,
+                    expiry_date: expiryDate,
+                    file_url: fileUrl || d.file_url,
+                    status: calculateStatus(expiryDate)
+                } : d)
             })));
         } catch (err) {
             console.error('Supabase doc update error:', err);
