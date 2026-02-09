@@ -179,14 +179,14 @@ export function EmployeeCard({
                                             <button
                                                 onClick={() => startEditingDoc(doc)}
                                                 className="btn-icon"
-                                                style={{ color: '#cbd5e1' }}
+                                                style={{ color: 'var(--secondary)' }}
                                             >
                                                 <Edit2 size={13} />
                                             </button>
                                             <button
                                                 onClick={() => onDeleteDocument(doc.id, employee.id)}
                                                 className="btn-icon"
-                                                style={{ color: '#cbd5e1' }}
+                                                style={{ color: 'var(--secondary)' }}
                                             >
                                                 <Trash2 size={13} />
                                             </button>
