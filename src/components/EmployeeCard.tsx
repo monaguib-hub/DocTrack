@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Employee, Document } from '@/hooks/useEmployees';
-import { Edit2, Trash2, Paperclip, Check, X, FileText, ExternalLink } from 'lucide-react';
+import { Edit2, Trash2, Paperclip, Check, X, FileText, ExternalLink, AlertTriangle } from 'lucide-react';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 interface EmployeeCardProps {
     employee: Employee;
@@ -29,6 +30,9 @@ export function EmployeeCard({
     const [editDocFile, setEditDocFile] = useState<File | null>(null);
     const [isNoExpiry, setIsNoExpiry] = useState(false);
     const [isUpdatingDoc, setIsUpdatingDoc] = useState(false);
+
+    const [isDeleteEmpConfirmOpen, setIsDeleteEmpConfirmOpen] = useState(false);
+    const [docToDelete, setDocToDelete] = useState<string | null>(null);
 
     const criticalDocs = employee.documents.filter(d => d.status === 'critical');
     const warningDocs = employee.documents.filter(d => d.status === 'warning');
@@ -239,7 +243,7 @@ export function EmployeeCard({
                                                 <Edit2 size={13} />
                                             </button>
                                             <button
-                                                onClick={() => onDeleteDocument(doc.id, employee.id)}
+                                                onClick={() => setDocToDelete(doc.id)}
                                                 className="btn-icon"
                                                 style={{ color: 'var(--secondary)' }}
                                             >
@@ -257,6 +261,16 @@ export function EmployeeCard({
                         </div>
                     )}
                 </div>
+
+                <ConfirmModal
+                    isOpen={docToDelete !== null}
+                    onClose={() => setDocToDelete(null)}
+                    onConfirm={() => docToDelete && onDeleteDocument(docToDelete, employee.id)}
+                    title="Delete Document"
+                    message={`Are you sure you want to delete "${employee.documents.find(d => d.id === docToDelete)?.name}"? This action cannot be undone.`}
+                    type="warning"
+                    confirmText="Delete"
+                />
             </div>
 
             <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem' }}>
@@ -280,7 +294,7 @@ export function EmployeeCard({
                     Add Document
                 </button>
                 <button
-                    onClick={() => onDelete(employee.id)}
+                    onClick={() => setIsDeleteEmpConfirmOpen(true)}
                     className="btn-icon"
                     style={{
                         background: 'rgba(218, 31, 51, 0.1)',
@@ -292,6 +306,16 @@ export function EmployeeCard({
                     <Trash2 size={18} />
                 </button>
             </div>
+
+            <ConfirmModal
+                isOpen={isDeleteEmpConfirmOpen}
+                onClose={() => setIsDeleteEmpConfirmOpen(false)}
+                onConfirm={() => onDelete(employee.id)}
+                title="Delete Employee"
+                message={`Are you sure you want to delete ${employee.name}? All their documents will be permanently lost.`}
+                type="danger"
+                confirmText="Delete Employee"
+            />
         </div>
     );
 }
