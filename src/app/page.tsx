@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Users, ChevronRight, FileText, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Users, ChevronRight, FileText } from 'lucide-react';
 
 export default function LandingPage() {
     return (
@@ -11,19 +11,9 @@ export default function LandingPage() {
                 <h1 style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '1rem', letterSpacing: '-0.025em' }}>
                     Welcome to <span style={{ color: 'var(--primary)' }}>DocTrack</span>
                 </h1>
-                <p style={{ fontSize: '1.25rem', color: 'var(--secondary)', opacity: 0.8, maxWidth: '600px', margin: '0 auto', marginBottom: '2rem' }}>
+                <p style={{ fontSize: '1.25rem', color: 'var(--secondary)', opacity: 0.8, maxWidth: '600px', margin: '0 auto' }}>
                     The complete document management solution for your organization's compliance and tracking needs.
                 </p>
-                <Link href="/dashboard" className="btn-primary" style={{
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '12px 32px',
-                    fontSize: '1.1rem'
-                }}>
-                    Get Started <ArrowRight size={20} />
-                </Link>
             </div>
 
             <div className="grid" style={{
