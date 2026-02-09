@@ -48,7 +48,7 @@ export function useEmployees() {
                         ...doc,
                         status: calculateStatus(doc.expiry_date)
                     }))
-                }));
+                })).sort((a: any, b: any) => a.name.localeCompare(b.name));
                 setEmployees(transformedData);
                 localStorage.setItem('doctrack_data', JSON.stringify(transformedData));
             } else {
