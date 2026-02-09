@@ -46,14 +46,12 @@ This is the recommended way to use the app permanently!
 2.  **New Repository**: Click "New" and name it `doctrack`.
 3.  **Upload Code**:
     *   In the project folder on your computer, open a terminal.
-    *   Run these commands one by one:
-        ```bash
-        git init
-        git add .
-        git commit -m "Initial commit"
-        git branch -M main
-        git remote add origin https://github.com/YOUR_USERNAME/doctrack.git
-        git push -u origin main
+    *   I've installed Git for you, but we need to use its full "address" to run it. 
+    *   **Run these commands one by one** (Copy and paste each one):
+        ```powershell
+        & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" remote add origin https://github.com/YOUR_USERNAME/doctrack.git
+        & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" branch -M main
+        & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" push -u origin main
         ```
     *(Replace `YOUR_USERNAME` with your GitHub username).*
 
@@ -61,16 +59,27 @@ This is the recommended way to use the app permanently!
 1.  **Open Vercel**: Go to [vercel.com](https://vercel.com) and sign up with your GitHub account.
 2.  **Add New Project**: Click "Add New" > "Project".
 3.  **Import**: Find the `doctrack` repository and click "Import".
-4.  **Environment Variables**:
-    *   Under "Environment Variables", add the two keys from your Supabase settings (URL and Key).
-5.  **Deploy**: Click "Deploy". Your app will be live!
+4.  **Environment Variables (CRITICAL)**:
+    - **Note**: Your `.env.local` file is "hidden" and **will not** be on GitHub for security (to keep your database safe). You must add the keys here manually.
+    - Click on "Environment Variables".
+    - Under **Key**, type: `NEXT_PUBLIC_SUPABASE_URL`
+    - Under **Value**, paste your Supabase URL.
+    - Click **Add**.
+    - Next, under **Key**, type: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    - Under **Value**, paste your Supabase Key.
+    - Click **Add**.
+5.  **Deploy**: Click "Deploy". Now Vercel has the keys and the app will work!
 
 ---
 
-## 4. Using the Dashboard
-- **Add Employee**: Click the red "+ Add New Employee" button.
-- **Add Document**: Click "Add Document" on any employee's card.
-- **Alert Colors**:
-    - 🚨 **Red**: Expires in less than 1 month.
-    - ⚠️ **Yellow**: Expires in less than 3 months.
-    - ✅ **Green**: Expires after 3 months.
+## 5. How to Apply Fixes or Updates
+If I give you a fix (like I just did for the error you saw), follow these simple steps to update your live app:
+
+1.  **Open your terminal** in the project folder.
+2.  **Paste these commands** one by one:
+    ```powershell
+    & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" add .
+    & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" commit -m "Apply bug fix"
+    & "C:\Users\mnaguib\AppData\Local\Programs\Git\cmd\git.exe" push
+    ```
+3.  **Vercel will automatically detect** the change and redeploy your app in about 1 minute. You don't need to do anything else!
