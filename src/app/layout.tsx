@@ -17,7 +17,7 @@ export default function RootLayout({
                 <nav className="glass-nav">
                     <div className="container" style={{ padding: '0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <img src="/logo.jpg" alt="ABS Logo" style={{ height: '32px', width: 'auto' }} />
+                            <img src="/logo.jpg" alt="ABS Logo" style={{ height: '64px', width: 'auto' }} />
                             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary)', letterSpacing: '-0.025em' }}>
                                 DOC<span style={{ color: 'var(--secondary)' }}>TRACK</span>
                             </div>
