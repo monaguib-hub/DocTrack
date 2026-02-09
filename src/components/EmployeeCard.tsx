@@ -152,7 +152,10 @@ export function EmployeeCard({
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <FileText size={16} style={{ color: '#94a3b8' }} />
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{doc.name}</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{doc.name}</span>
+                                                {doc.file_url && <Paperclip size={12} style={{ color: 'var(--primary)', transform: 'rotate(45deg)' }} />}
+                                            </div>
                                             {doc.file_url && (
                                                 <a href={doc.file_url} target="_blank" rel="noopener noreferrer" style={{
                                                     fontSize: '0.7rem',
@@ -160,7 +163,8 @@ export function EmployeeCard({
                                                     textDecoration: 'none',
                                                     display: 'flex',
                                                     alignItems: 'center',
-                                                    gap: '2px'
+                                                    gap: '2px',
+                                                    fontWeight: '600'
                                                 }}>
                                                     View File <ExternalLink size={10} />
                                                 </a>
